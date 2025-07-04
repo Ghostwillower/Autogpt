@@ -155,6 +155,7 @@ def main() -> None:
     parser.add_argument("--voice", action="store_true", help="Capture goal from microphone")
     parser.add_argument("--speak", action="store_true", help="Speak status updates")
     parser.add_argument("--nogui", action="store_true", help="Do not launch the GUI")
+    parser.add_argument("--webgui", action="store_true", help="Launch the web React interface")
     parser.add_argument("--skill", help="Run a specific skill plugin")
     parser.add_argument("--re-enroll", action="store_true", help="Re-enrol the authorised user")
     parser.add_argument("--status", action="store_true", help="Show security status")
@@ -233,6 +234,15 @@ def main() -> None:
     if args.goal:
         run_goal(args.goal, dry_run=args.dry_run, speak=args.speak, user=user)
         return
+
+    if args.webgui:
+        try:
+            import bridge_server
+            bridge_server.start_server(open_browser=True)
+            return
+        except Exception as exc:
+            log(f"Web GUI unavailable: {exc}", "WARNING")
+            return
 
     if not args.nogui:
         try:
