@@ -30,8 +30,6 @@ except Exception:
 
 
 def _execute_steps(plan: List[dict], dry_run: bool, speak: bool, user: str) -> List[Any]:
-    """Execute a prepared plan and return step results."""
-
     results: List[Any] = []
 
     for idx, step in enumerate(plan):
@@ -44,20 +42,16 @@ def _execute_steps(plan: List[dict], dry_run: bool, speak: bool, user: str) -> L
         agent_name = step.get("agent")
         action_name = step.get("action")
         params = step.get("params", {}).copy()
+
         if speak and voice_output:
             voice_output.speak(f"Step {idx}: {agent_name}.{action_name}")
 
-        # Replace references to previous results
         for key, val in list(params.items()):
-            if (
-                isinstance(val, str)
-                and val.startswith("<result_from_step_")
-                and val.endswith(">")
-            ):
+            if isinstance(val, str) and val.startswith("<result_from_step_") and val.endswith(">"):
                 try:
                     ref_index = int(val[len("<result_from_step_") : -1])
                     params[key] = results[ref_index]
-                except Exception as exc:  # pragma: no cover - defensive
+                except Exception as exc:
                     log(f"Failed to resolve parameter {val}: {exc}", "WARNING")
 
         params.setdefault("user", user)
@@ -82,6 +76,7 @@ def _execute_steps(plan: List[dict], dry_run: bool, speak: bool, user: str) -> L
                     module = importlib.import_module(f"agents.{agent_name}")
                 func = getattr(module, action_name)
                 result = func(**params)
+
             results.append(result)
             log(f"Step {idx} returned: {result}")
             if speak and voice_output:
@@ -94,23 +89,6 @@ def _execute_steps(plan: List[dict], dry_run: bool, speak: bool, user: str) -> L
 
 
 def run_goal(goal: str, dry_run: bool = False, speak: bool = False, user: str = "default") -> List[Any]:
-    """Execute a goal using the planner and agent modules.
-
-    Parameters
-    ----------
-    goal : str
-        Natural language instruction from the user.
-    dry_run : bool, optional
-        When ``True`` just print the planned actions without executing them.
-    speak : bool, optional
-        When ``True`` provide spoken status updates after each step.
-
-    Returns
-    -------
-    list
-        A list of results from each executed step.
-    """
-
     log(f"Goal received for {user}: {goal}")
     if not identity_verified(user):
         log("Identity verification failed", "GUARD")
@@ -119,6 +97,7 @@ def run_goal(goal: str, dry_run: bool = False, speak: bool = False, user: str = 
         return []
     if speak and voice_output:
         voice_output.speak(f"Running goal for {user}")
+
     home = os.path.expanduser("~")
     build_file_index([os.path.join(home, p) for p in ["Downloads", "Documents", "Desktop"]])
     plan = generate_plan(goal, user)
@@ -129,7 +108,7 @@ def run_goal(goal: str, dry_run: bool = False, speak: bool = False, user: str = 
     summary = str(results[-1]) if results else "no result"
     try:
         log_goal(goal, summary, user)
-    except Exception as exc:  # pragma: no cover - log errors only
+    except Exception as exc:
         log(f"Failed to log goal: {exc}", "ERROR")
     if speak and voice_output:
         voice_output.speak("Goal complete")
@@ -138,11 +117,10 @@ def run_goal(goal: str, dry_run: bool = False, speak: bool = False, user: str = 
 
 
 def run_plan_direct(plan_text: str, user: str = "default", dry_run: bool = False) -> List[Any]:
-    """Execute a plan provided as a stringified list of steps."""
-
     log(f"Running direct plan for {user}")
     if not identity_verified(user) or not loyalty.can_execute("direct", user):
         return []
+
     try:
         plan = parse_plan_string(plan_text)
     except Exception as exc:
@@ -154,22 +132,18 @@ def run_plan_direct(plan_text: str, user: str = "default", dry_run: bool = False
     summary = str(results[-1]) if results else "no result"
     try:
         log_goal(f"direct:{plan_text}", summary, user)
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         log(f"Failed to log direct plan: {exc}", "ERROR")
     return results
 
 
 def run_test_goal(dry_run: bool = False, speak: bool = False, user: str = "default") -> None:
-    """Run the built-in test scenario."""
-
     goal = "Find the latest screenshot, redact any names, and email it to my teacher."
     results = run_goal(goal, dry_run=dry_run, speak=speak, user=user)
     log(f"Test goal completed with results: {results}")
 
 
 def main() -> None:
-    """CLI entry point for the Ghosthand agent."""
-
     parser = argparse.ArgumentParser(description="Ghosthand AI Agent")
     parser.add_argument("--goal", help="Goal for the agent")
     parser.add_argument("--user", help="Specify user id")
@@ -222,7 +196,6 @@ def main() -> None:
     user = detect_user(args.user)
     skills = load_skills()
 
-    # check queued goals first
     goal_queue.run_due_goals()
 
     if args.queue:
@@ -274,3 +247,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

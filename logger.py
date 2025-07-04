@@ -8,6 +8,7 @@ LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR / "ghosthand.log"
 
+# Custom log levels
 GUARD_LEVEL = 25
 WEB_LEVEL = 26
 SKILL_LEVEL = 27
