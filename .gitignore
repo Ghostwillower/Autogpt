@@ -4,3 +4,6 @@ __pycache__/
 data/memory.db
 data/file_index.db
 logs/
+voiceprints/
+.ghosthand_lock.json
+

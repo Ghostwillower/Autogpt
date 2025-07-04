@@ -8,6 +8,14 @@ LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR / "ghosthand.log"
 
+# Custom log levels
+GUARD_LEVEL = 25
+WEB_LEVEL = 26
+SKILL_LEVEL = 27
+logging.addLevelName(GUARD_LEVEL, "GUARD")
+logging.addLevelName(WEB_LEVEL, "WEB")
+logging.addLevelName(SKILL_LEVEL, "SKILL")
+
 _logger = None
 
 
@@ -33,5 +41,13 @@ def log(message: str, level: str = "INFO") -> None:
     global _logger
     if _logger is None:
         _logger = _init_logger()
-    lvl = getattr(logging, level.upper(), logging.INFO)
+    upper = level.upper()
+    if upper == "GUARD":
+        lvl = GUARD_LEVEL
+    elif upper == "WEB":
+        lvl = WEB_LEVEL
+    elif upper == "SKILL":
+        lvl = SKILL_LEVEL
+    else:
+        lvl = getattr(logging, upper, logging.INFO)
     _logger.log(lvl, message)

@@ -41,15 +41,11 @@ class Memory:
 
 
 def _connect() -> sqlite3.Connection:
-    """Return a connection to the goal log database."""
-
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    return conn
+    return sqlite3.connect(DB_PATH)
 
 
 def learn_preference(user: str, category: str, key: str, value: str) -> None:
-    """Store a user preference value."""
     try:
         conn = _connect()
         cur = conn.cursor()
@@ -72,7 +68,6 @@ def learn_preference(user: str, category: str, key: str, value: str) -> None:
 
 
 def get_preference(user: str, category: str, key: str) -> Optional[str]:
-    """Retrieve a stored user preference."""
     try:
         conn = _connect()
         cur = conn.cursor()
@@ -96,8 +91,6 @@ def get_preference(user: str, category: str, key: str) -> Optional[str]:
 
 
 def log_goal(goal: str, result_summary: str, user: str) -> None:
-    """Record a goal, user and result summary with a timestamp."""
-
     try:
         conn = _connect()
         cur = conn.cursor()
@@ -111,7 +104,7 @@ def log_goal(goal: str, result_summary: str, user: str) -> None:
         )
         conn.commit()
         log(f"Logged goal at {ts}", "INFO")
-    except Exception as exc:  # pragma: no cover - best effort logging
+    except Exception as exc:
         log(f"Failed to log goal: {exc}", "ERROR")
     finally:
         try:
@@ -120,9 +113,30 @@ def log_goal(goal: str, result_summary: str, user: str) -> None:
             pass
 
 
-def get_recent_goals(limit: int = 5, user: Optional[str] = None) -> List[Tuple[str, str, str]]:
-    """Return the most recent goals with timestamps."""
+def log_rejection(goal: str, reason: str, user: str) -> None:
+    try:
+        conn = _connect()
+        cur = conn.cursor()
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS rejections (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, user TEXT, goal TEXT, reason TEXT)"
+        )
+        ts = datetime.now().isoformat(timespec="seconds")
+        cur.execute(
+            "INSERT INTO rejections(timestamp, user, goal, reason) VALUES (?, ?, ?, ?)",
+            (ts, user, goal, reason),
+        )
+        conn.commit()
+        log(f"Logged rejection for {user}: {reason}", "INFO")
+    except Exception as exc:
+        log(f"Failed to log rejection: {exc}", "ERROR")
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
+
+def get_recent_goals(limit: int = 5, user: Optional[str] = None) -> List[Tuple[str, str, str]]:
     try:
         conn = _connect()
         cur = conn.cursor()
@@ -139,9 +153,8 @@ def get_recent_goals(limit: int = 5, user: Optional[str] = None) -> List[Tuple[s
                 "SELECT timestamp, goal, result FROM goal_log ORDER BY id DESC LIMIT ?",
                 (limit,),
             )
-        rows = cur.fetchall()
-        return rows
-    except Exception as exc:  # pragma: no cover - best effort retrieval
+        return cur.fetchall()
+    except Exception as exc:
         log(f"Failed to fetch recent goals: {exc}", "ERROR")
         return []
     finally:
@@ -152,7 +165,6 @@ def get_recent_goals(limit: int = 5, user: Optional[str] = None) -> List[Tuple[s
 
 
 def list_users() -> List[str]:
-    """Return distinct user identifiers known to the memory system."""
     try:
         conn = _connect()
         cur = conn.cursor()
@@ -160,8 +172,7 @@ def list_users() -> List[str]:
             "CREATE TABLE IF NOT EXISTS goal_log (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, user TEXT, goal TEXT, result TEXT)"
         )
         cur.execute("SELECT DISTINCT user FROM goal_log")
-        rows = cur.fetchall()
-        return [r[0] for r in rows if r[0]]
+        return [r[0] for r in cur.fetchall() if r[0]]
     except Exception as exc:
         log(f"Failed to list users: {exc}", "ERROR")
         return []
@@ -173,7 +184,6 @@ def list_users() -> List[str]:
 
 
 def query_memory(goal: str, user: Optional[str] = None) -> List[Tuple[str, str, str]]:
-    """Return up to three past goals similar to the provided goal."""
     try:
         conn = _connect()
         cur = conn.cursor()
@@ -203,7 +213,6 @@ def query_memory(goal: str, user: Optional[str] = None) -> List[Tuple[str, str, 
                 results.append((ts, gtxt, res))
         except Exception:
             import difflib
-
             matches = difflib.get_close_matches(goal, goals, n=3, cutoff=0.4)
             for m in matches:
                 for ts, gtxt, res in rows:
@@ -211,9 +220,77 @@ def query_memory(goal: str, user: Optional[str] = None) -> List[Tuple[str, str, 
                         results.append((ts, gtxt, res))
                         break
         return results
-    except Exception as exc:  # pragma: no cover - best effort
+    except Exception as exc:
         log(f"Failed to query memory: {exc}", "ERROR")
         return []
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+def _ensure_event_table(cur):
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS events (timestamp TEXT, event TEXT, user TEXT, details TEXT)"
+    )
+
+
+def log_first_run() -> None:
+    try:
+        conn = _connect()
+        cur = conn.cursor()
+        _ensure_event_table(cur)
+        ts = datetime.now().isoformat(timespec="seconds")
+        cur.execute(
+            "INSERT INTO events(timestamp, event, user, details) VALUES (?, 'first_run', '', '')",
+            (ts,),
+        )
+        conn.commit()
+        log("First run logged", "INFO")
+    except Exception as exc:
+        log(f"Failed to log first run: {exc}", "ERROR")
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+def log_voice_verification(user: str, success: bool) -> None:
+    try:
+        conn = _connect()
+        cur = conn.cursor()
+        _ensure_event_table(cur)
+        ts = datetime.now().isoformat(timespec="seconds")
+        cur.execute(
+            "INSERT INTO events(timestamp, event, user, details) VALUES (?, 'voice', ?, ?)",
+            (ts, user, "success" if success else "fail"),
+        )
+        conn.commit()
+    except Exception as exc:
+        log(f"Failed to log voice verification: {exc}", "ERROR")
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+def log_tamper(details: str) -> None:
+    try:
+        conn = _connect()
+        cur = conn.cursor()
+        _ensure_event_table(cur)
+        ts = datetime.now().isoformat(timespec="seconds")
+        cur.execute(
+            "INSERT INTO events(timestamp, event, user, details) VALUES (?, 'tamper', '', ?)",
+            (ts, details),
+        )
+        conn.commit()
+        log("Tamper event logged", "GUARD")
+    except Exception as exc:
+        log(f"Failed to log tamper: {exc}", "ERROR")
     finally:
         try:
             conn.close()
