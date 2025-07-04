@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Ghosthand ChatGPT Relay",
+  "description": "Send prompts to ChatGPT using the logged in session and forward the response to Ghosthand.",
+  "version": "1.0",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": ["https://chat.openai.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_title": "Ghosthand Relay"
+  }
+}
