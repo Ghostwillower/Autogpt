@@ -27,7 +27,9 @@ The React interface can submit goals or pre-made plans, browse recent history an
 This repository is a minimal working example rather than a production-ready assistant, but it demonstrates how different modules cooperate to perform complex multi-step tasks.
 
 ## Web interface
-Run the agent with `--webgui` to launch the React interface in your browser. It communicates with the local Flask bridge server and lets you submit goals or direct plans, inspect recent history and start the enrollment wizard.
+Run the agent with `--webgui` to launch the React interface in your browser.
+The static files live in `react_frontend/` and can be rebuilt with `npm run build` from that directory.
+The web UI talks to the local Flask bridge server and lets you submit goals or direct plans, browse recent history and start the enrollment wizard.
 
 ## Notes
 - Many features rely on optional packages such as Whisper, spaCy and Playwright.
