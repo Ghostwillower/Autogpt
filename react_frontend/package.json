@@ -1,0 +1,16 @@
+{
+  "name": "ghosthand-webui",
+  "version": "1.0.0",
+  "description": "Web frontend for Ghosthand AI agent",
+  "scripts": {
+    "start": "parcel src/index.html --open",
+    "build": "parcel build src/index.html --dist-dir ../react_frontend --no-content-hash --public-url ."
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.15.4"
+  }
+}

@@ -7,6 +7,7 @@ from tkinter import scrolledtext, messagebox
 from memory import get_recent_goals, list_users
 from main import run_goal
 from user_profile import detect_user
+from enrollment import run_enrollment
 
 
 def start_gui() -> None:
@@ -14,8 +15,12 @@ def start_gui() -> None:
 
     root = tk.Tk()
     root.title("Ghosthand")
+    root.configure(bg="#eef2ff")
 
-    entry_frame = tk.Frame(root)
+    title_lbl = tk.Label(root, text="Ghosthand", font=("Helvetica", 16, "bold"), bg="#eef2ff")
+    title_lbl.pack(pady=(10, 5))
+
+    entry_frame = tk.Frame(root, bg="#eef2ff")
     entry_frame.pack(padx=10, pady=10, fill=tk.X)
 
     goal_var = tk.StringVar()
@@ -30,8 +35,11 @@ def start_gui() -> None:
     user_menu.pack(side=tk.RIGHT)
 
     dry_var = tk.BooleanVar()
-    dry_check = tk.Checkbutton(root, text="Dry run", variable=dry_var)
+    dry_check = tk.Checkbutton(root, text="Dry run", variable=dry_var, bg="#eef2ff")
     dry_check.pack(anchor="w", padx=10)
+
+    enroll_button = tk.Button(root, text="Enroll New User", command=run_enrollment)
+    enroll_button.pack(anchor="w", padx=10, pady=(0, 5))
 
     output = scrolledtext.ScrolledText(root, width=80, height=20)
     output.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
