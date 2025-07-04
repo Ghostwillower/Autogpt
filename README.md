@@ -22,3 +22,8 @@ Ghosthand is a desktop automation agent.  It accepts natural language instructio
   ChatGPT using the current session and relays the response back to Ghosthand.
 
 This repository is a minimal working example rather than a production-ready assistant, but it demonstrates how different modules cooperate to perform complex multi-step tasks.
+
+## Notes
+- Many features rely on optional packages such as Whisper, spaCy and Playwright.
+- Some functionality requires microphone and speaker access.
+- Use caution and review the code before running in sensitive environments.
