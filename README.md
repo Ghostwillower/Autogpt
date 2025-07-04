@@ -21,7 +21,10 @@ The React interface can submit goals or pre-made plans, browse recent history an
 - `gui.py` - Optional Tkinter interface to run goals from a desktop panel.
 - `enrollment.py` - Friendly wizard for setting up new users and optional voice enrollment.
 - `bridge_server.py` - Hosts a small Flask server and serves the React-based web interface.
-- `react_frontend/` - Static files that implement the React UI.
+- `react_frontend/` - Static files that implement the React UI. The folder
+  includes a small `package.json` so you can rebuild `app.js` from the JSX
+  sources under `react_frontend/src` using `npm run build` or watch for
+  changes with `npm run watch`.
 - `chrome_extension/` - Optional browser extension that forwards web text to ChatGPT using the current session and relays the response back to Ghosthand.
 
 This repository is a minimal working example rather than a production-ready assistant, but it demonstrates how different modules cooperate to perform complex multi-step tasks.

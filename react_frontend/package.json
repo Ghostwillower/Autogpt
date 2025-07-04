@@ -1,0 +1,17 @@
+{
+  "name": "ghosthand-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npx babel src --out-file app.js --extensions .jsx --config-file ./babel.config.json",
+    "watch": "npx babel src --out-file app.js --extensions .jsx --config-file ./babel.config.json --watch"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.1",
+    "@babel/preset-react": "^7.22.15"
+  }
+}

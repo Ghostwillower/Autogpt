@@ -1,6 +1,6 @@
-const { useState, useEffect } = React;
+import React, { useState, useEffect } from 'react';
 
-function App() {
+export default function App() {
   const [goal, setGoal] = useState('');
   const [plan, setPlan] = useState('');
   const [user, setUser] = useState('default');
@@ -27,7 +27,7 @@ function App() {
       const res = await fetch(`/history?user=${encodeURIComponent(user)}`);
       const data = await res.json();
       setHistory(data.history || []);
-    } catch {
+    } catch (e) {
       setHistory([]);
     }
   };
@@ -43,7 +43,7 @@ function App() {
       const data = await res.json();
       setStatus(data.status || 'started');
       fetchHistory();
-    } catch {
+    } catch (e) {
       setStatus('failed');
     }
   };
@@ -59,7 +59,7 @@ function App() {
       const data = await res.json();
       setStatus(data.status || 'started');
       fetchHistory();
-    } catch {
+    } catch (e) {
       setStatus('failed');
     }
   };
@@ -70,7 +70,7 @@ function App() {
       const res = await fetch('/enroll', { method: 'POST' });
       const data = await res.json();
       setStatus(data.status || 'started');
-    } catch {
+    } catch (e) {
       setStatus('failed');
     }
   };
@@ -99,7 +99,9 @@ function App() {
         User:
         <select value={user} onChange={e => setUser(e.target.value)}>
           {users.map(u => (
-            <option key={u} value={u}>{u}</option>
+            <option key={u} value={u}>
+              {u}
+            </option>
           ))}
         </select>
       </div>
@@ -120,12 +122,12 @@ function App() {
         <button onClick={fetchHistory}>Refresh History</button>
         <ul>
           {history.map((h, idx) => (
-            <li key={idx}>{h.timestamp}: {h.goal} -&gt; {h.result}</li>
+            <li key={idx}>
+              {h.timestamp}: {h.goal} -&gt; {h.result}
+            </li>
           ))}
         </ul>
       </div>
     </div>
   );
 }
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
