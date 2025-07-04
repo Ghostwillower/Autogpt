@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ghosthand Relay</title>
+  <style>
+    body { font-family: sans-serif; margin: 1em; }
+    textarea { width: 100%; height: 6em; }
+  </style>
+</head>
+<body>
+  <textarea id="prompt" placeholder="Enter prompt"></textarea>
+  <button id="send">Send to ChatGPT</button>
+  <script>
+    document.getElementById('send').addEventListener('click', () => {
+      const text = document.getElementById('prompt').value;
+      chrome.runtime.sendMessage({ type: 'gh_prompt', text });
+    });
+  </script>
+</body>
+</html>
